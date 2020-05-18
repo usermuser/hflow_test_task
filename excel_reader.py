@@ -4,8 +4,9 @@
 import os
 from settings import BASE_DIR
 from candidates import Candidate
-from xlrd import workbook
+import xlrd
 
+_path = os.getcwd()
 excel_path = os.path.join(BASE_DIR, 'excel', 'Тестовая база.xlsx')
 
 
