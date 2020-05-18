@@ -15,5 +15,19 @@ class ExcelReader():
         self.excel_path = excel_path
 
     def parse_excel(self):
-        with open(excel_path, encoding='utf-8', 'r') as excel:
+        """Save excel data as list of lists"""
+        wb = xlrd.open_workbook(self.excel_path)
+        sheet = wb.sheet_by_index(0)  # for simplicity we assume that we have only one sheet always
+        _number_of_rows = sheet.nrows
+        result = []
+        for row in range(1, _number_of_rows):
+            __row = []
+            for value in sheet.row_values(row):
+                __row.append(value)
+            result.append(__row)
+        return result
 
+
+# if __name__ == '__main__':
+#     e = ExcelReader(excel_path)
+#     print(e.parse_excel())
