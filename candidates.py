@@ -5,7 +5,6 @@
 
 
 class BaseCandidate:
-    firstname: str
 
     def __init__(self, position, fio, salary='', comment='', status='', fp=''):
         self.position = position
@@ -17,14 +16,16 @@ class BaseCandidate:
         self.firstname = ''
         self.middlename = ''
         self.lastname = ''
-        self.parse_fio()
+        self.__parse_fio()
 
-    def parse_fio(self):
-        _fio_as_list = self.fio.split(' ')
-        if len(_fio_as_list) == 3:
-            self.lastname, self.firstname, self.middlename = _fio_as_list
-        elif len(_fio_as_list) == 2:
-            self.lastname, self.firstname = _fio_as_list
+    def __parse_fio(self):
+        """Create separated attributes firstname, last name (also middlename if provided"""
+
+        __fio_as_list = self.fio.split(' ')
+        if len(__fio_as_list) == 3:
+            self.lastname, self.firstname, self.middlename = __fio_as_list
+        elif len(__fio_as_list) == 2:
+            self.lastname, self.firstname = __fio_as_list
         return
 
     @property
@@ -32,4 +33,8 @@ class BaseCandidate:
         return ' '.join([self.lastname, self.firstname])
 
     def __repr__(self):
-        pass
+        return self.lastname_firstname
+
+
+class Candidate(BaseCandidate):
+    pass
