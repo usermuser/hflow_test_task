@@ -39,7 +39,8 @@
     * мы храним путь до файла в переменной `fp`
     * как мы отправляем файл? буду использовать `requests`, об этом в отдельно пункте
     * отдельная функция для сравнения(добавления пути файла в атрибут `fp`) по фамилии и имени, что то типа:
-        ```for cand in cand_list:
+        ```
+            for cand in cand_list:
                if cand.lastname_firstname in attachments:
                    cond.fp = attachments['cond.lastname_firstname']
         ```
