@@ -13,21 +13,41 @@ excel_path = os.path.join(BASE_DIR, 'excel', 'Тестовая база.xlsx')
 class ExcelReader():
     def __init__(self, excel_path):
         self.excel_path = excel_path
+        self.candidates = []
 
-    def parse_excel(self):
+    def candidates_from_excel(self):  # todo check each candidate in candidate_from_excel
         """Save excel data as list of lists"""
         wb = xlrd.open_workbook(self.excel_path)
         sheet = wb.sheet_by_index(0)  # for simplicity we assume that we have only one sheet always
         _number_of_rows = sheet.nrows
         result = []
-        for row in range(1, _number_of_rows):
-            __row = []
+        for row in range(1, _number_of_rows):  # run over all rows except first one
+            __row = []  # todo explain this line and this piece of code
             for value in sheet.row_values(row):
                 __row.append(value)
             result.append(__row)
         return result
 
+    def create_candidates(self):
+        for candidate in self.candidates_from_excel():
+            self.candidates.append(
+                Candidate(  # we assume that all columns in excel were filled
+                    position=candidate[0],  # explicit is better than implicit
+                    fio=candidate[1],
+                    salary=candidate[2],
+                    comment=candidate[3],
+                    status=candidate[4]
+                ))
+        return
+
+
+    def add_attachments(self):
+        for candidate in self.candidates:
+            pass
+
+
 
 # if __name__ == '__main__':
 #     e = ExcelReader(excel_path)
-#     print(e.parse_excel())
+    # for c in e.candidates_from_excel():
+    #     print(c)
