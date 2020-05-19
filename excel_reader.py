@@ -13,7 +13,6 @@ excel_path = os.path.join(BASE_DIR, 'excel', 'Тестовая база.xlsx')
 class ExcelReader():
     def __init__(self, excel_path):
         self.excel_path = excel_path
-        self.candidates = []
 
     def candidates_from_excel(self):  # todo check each candidate in candidate_from_excel
         """Save excel data as list of lists"""
@@ -28,26 +27,9 @@ class ExcelReader():
             result.append(__row)
         return result
 
-    def create_candidates(self):
-        for candidate in self.candidates_from_excel():
-            self.candidates.append(
-                Candidate(  # we assume that all columns in excel were filled
-                    position=candidate[0],  # explicit is better than implicit
-                    fio=candidate[1],
-                    salary=candidate[2],
-                    comment=candidate[3],
-                    status=candidate[4]
-                ))
-        return
-
-
-    def add_attachments(self):
-        for candidate in self.candidates:
-            pass
-
 
 
 # if __name__ == '__main__':
 #     e = ExcelReader(excel_path)
-    # for c in e.candidates_from_excel():
-    #     print(c)
+# for c in e.candidates_from_excel():
+#     print(c)
