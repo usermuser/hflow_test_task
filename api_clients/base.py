@@ -68,8 +68,15 @@ class BaseClient:
                     response = requests.post(_url, json=payload)
                 else:
                     response = requests.post(_url, data=payload)
-
                 response.raise_for_status()
+                return response.json()
+            except self.REQUESTS_EXCEPTIONS:
+                self.logger.exception('Запрос по адресу %s не удался' % _url)
+                return
+            except Exception:
+                self.logger.exception('Неизвестная ошибка...')
+                return
+
 
 
 
