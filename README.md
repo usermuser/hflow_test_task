@@ -168,3 +168,4 @@
 * `parser.add_argument('-p', action="store", dest="folder", help="path to database folder")`
 * `args = parser.parse_args()`
 
+11. flake8

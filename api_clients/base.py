@@ -34,8 +34,15 @@ class BaseClient:
             repeat_timeout=REPEAT_TIMEOUT,
             retry_codes=RETRY_CODES,
     ):
+        self.base_url = base_url
+        self.token = token
+        self.retry_count = retry_count
+        self.retry_timeout = retry_timeout
+        self.retry = retry
+        self.repeat_timeout = repeat_timeout
+        self.retry_codes = retry_codes
 
-    def _retry_stragety(self):
+    def _retry_strategy(self):
         retry_methods = ("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE")
         return Retry(
             total=self.retry_count,
@@ -50,5 +57,19 @@ class BaseClient:
     def get(self):
         pass
 
-    def post(self):
-        pass
+    def post(self, endpoint=None, json_input=True, json_output=True, payload=None):
+        _url = self.base_url + endpoint
+
+        with requests.Session() as session:
+            session.mount(_url, HTTPAdapter(max_retries=self._retry_strategy()))
+
+            try:
+                if json_input:
+                    response = requests.post(_url, json=payload)
+                else:
+                    response = requests.post(_url, data=payload)
+
+                response.raise_for_status()
+
+
+
