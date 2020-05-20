@@ -4,6 +4,7 @@ import logging
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from settings import TOKEN
 
 from rpsos.settings import (
     RETRY_COUNT,
@@ -27,5 +28,9 @@ class BaseClient:
             self,
             base_url=None,
             token=TOKEN,
-            retry_count=
-    ):
+            retry_count=RETRY_COUNT,
+            retry_timeout=RETRY_TIMEOUT,
+            retry=RETRY,
+            repeat_timeout=REPEAT_TIMEOUT,
+            retry_codes=RETRY_CODES,
+            ):
