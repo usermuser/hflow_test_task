@@ -1,6 +1,6 @@
 import os
 from pathlib import Path, PurePath
-from typing import List, Iterable, Tuple, Union
+from typing import List, Iterable, Tuple, Union, Dict
 
 from candidates import Candidate
 
@@ -11,24 +11,23 @@ class Attachment:
     def __init__(self, folder='cv'):
         self.folder = folder
 
-    def _get_attachments(self):
+    def _get_attachments(self) -> Dict:
         """Scan folder and save paths
-
 
         :returns Dict
         fp - filepath
 
-            {
-                'Lastname Name': ['fp', 'profession'],
-                'Lastname2 Name2': ['fp2', 'profession2'],
-                ...
-            }
-
+        Dict = {
+                    'Lastname Name': ['fp', 'profession'],
+                    'Lastname2 Name2': ['fp2', 'profession2'],
+                    ...
+                }
         """
         result = {}
         for address, dirs, files in os.walk(self.folder):
             if files:
-                files = self._remove_tempfiles()
+                files = self._remove_tempfiles(files)
+                print(files)
                 for file in files:
                     key = Path(file.stem)  # prepare key 'Lastname Firstname' for dict
                     fp = Path(file).resolve()  # prepare filepath
@@ -57,7 +56,7 @@ class Attachment:
             return filename, None
 
     def _is_tempfile(self, filename: str) -> bool:
-        return filename.startswith(prefix=('.', '~', 'lock'))
+        return filename.startswith(('.', '.~', '.~lock'))
 
     def _remove_tempfiles(self, files) -> List[str]:
         """Create new list without tempfiles"""
