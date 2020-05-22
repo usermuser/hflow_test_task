@@ -30,7 +30,7 @@ class ExcelReader:
             _data.append(column_data)
         return _data
 
-    def _candidates_from_excel(self) -> None:  # todo check each candidate in candidate_from_excel
+    def candidates_from_excel(self):  # todo check each candidate in candidate_from_excel
         """Save excel data """
         excel_data: List
         excel_data = self._read_excel()
@@ -44,11 +44,13 @@ class ExcelReader:
         # remove redundant whitespaces from 'ФИО' column
         # '  Иванов Иван   ' -> 'Иванов Иван'
         candidates['fios'] = list(map(str.strip, candidates['fios']))
+
         candidates['salary_requests'] = list(map(self._normilize_salary, candidates['salary_requests']))
 
         return candidates
 
     def _normilize_salary(self, salary):
+        # todo change function to work with copy and change it to staticmethod
         """Remove redundant letters like 'рублей' """
         patterns = ['рублей', 'руб', 'р', ' ']
         for pattern in patterns:

@@ -1,9 +1,11 @@
+from typing import List
+
 from excel_reader import ExcelReader
 from candidates import Candidate
 from attachment import Attachment
 
 
-def save_candidates():
+def save_candidates() -> List:
     """Read excel file with candidates information and store in a list"""
     _result = []
     _read = ExcelReader()
