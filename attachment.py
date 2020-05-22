@@ -1,12 +1,17 @@
 import os
 from pathlib import Path, PurePath
+from typing import List, Iterable, Tuple, Union
+
+from candidates import Candidate
 
 
 class Attachment:
+    """Aggregates methods to create attachments"""
+
     def __init__(self, folder='cv'):
         self.folder = folder
 
-    def attachments(self):
+    def _get_attachments(self):
         """Scan folder and save paths
 
 
@@ -31,7 +36,7 @@ class Attachment:
                     result[key] = [fp, position]
         return result
 
-    def _prepare_filename(self, filename: str):
+    def _prepare_filename(self, filename: str) -> Tuple[str, Union[str, None]]:
         """Create 'Lastname Firstname' identifier
 
         For simplicity we assume that filename will consists of only three or two words
@@ -51,17 +56,33 @@ class Attachment:
         else:
             return filename, None
 
-    def _is_tempfile(self, filename: str):
+    def _is_tempfile(self, filename: str) -> bool:
         return filename.startswith(prefix=('.', '~', 'lock'))
 
-    def _remove_tempfiles(self, files):
+    def _remove_tempfiles(self, files) -> List[str]:
         """Create new list without tempfiles"""
         return [file for file in files if self._is_tempfile(file)]
 
-    def add_attachment(self, candidates):
-        __attachments = self.attachments()
+    def add_attachment(self, candidates: Iterable[Candidate]) -> None:
+        """Add path to cv for every candidate
+
+        If we have cv file with same 'Lastname Firstname' as in excel file
+        we add path to to this cv
+        Example:
+            in excel file we have entry like this: 'Иванов Иван',
+            and also we have 'Иванов Иван.pdf' file
+            this method will add path of this file to candidate object.
+
+        Also for future improvements we keep folder name where 'Иванов Иван.pdf'
+        file stored, because folder name equals position column in excel file
+        Example:
+            Должность:                 folder name:
+            Менеджер по продажам       Менеджер по продажам
+
+        """
+        __attachments = self._get_attachments()
         for candidate in candidates:
             if candidate.lastname_firstname in __attachments:
-                candidate.lastname_firstname = __attachments[]
-                pass
-
+                candidate.fp = __attachments[candidate.lastname_firstname[0]]
+                # todo simplify attachments storage structure
+        return
