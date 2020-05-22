@@ -3,14 +3,13 @@
 """
 import os
 from settings import BASE_DIR
-from candidates import Candidate
 import xlrd
 
 _path = os.getcwd()
 excel_path = os.path.join(BASE_DIR, 'excel', 'Тестовая база.xlsx')
 
 
-class ExcelReader():
+class ExcelReader:
     def __init__(self, excel_path):
         self.excel_path = excel_path
 
@@ -30,5 +29,5 @@ class ExcelReader():
 
 if __name__ == '__main__':
     reader = ExcelReader(excel_path)
-for candidate in reader.candidates_from_excel():
-    print(candidate)
+    for candidate in reader.candidates_from_excel():
+        print(candidate)

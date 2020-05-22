@@ -16,7 +16,3 @@ def create_candidates():
                 status=candidate[4]
             ))
     return result
-
-
-
-

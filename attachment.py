@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+from pathlib import Path, PurePath
 
 
 class Attachment:
@@ -8,6 +8,7 @@ class Attachment:
 
     def attachments(self):
         """Scan folder and save paths
+
 
         :returns Dict
         fp - filepath
@@ -19,17 +20,16 @@ class Attachment:
             }
 
         """
-        tmp_file_pattern = ''
         result = {}
         for address, dirs, files in os.walk(self.folder):
             if files:
-                files = self.remove_tempfiles(files)
-
+                files = self._remove_tempfiles()
                 for file in files:
-                    # __lastname, __firstname = file.split(' ')
-                    # key = ' '.join([__lastname, __firstname])
-                    key = Path(file.stem)
-                    file = []
+                    key = Path(file.stem)  # prepare key 'Lastname Firstname' for dict
+                    fp = Path(file).resolve()  # prepare filepath
+                    position = PurePath(address).parts[-1]  # prepare position of candidate
+                    result[key] = [fp, position]
+        return result
 
     def _prepare_filename(self, filename: str):
         """Create 'Lastname Firstname' identifier
@@ -56,8 +56,12 @@ class Attachment:
 
     def _remove_tempfiles(self, files):
         """Create new list without tempfiles"""
-        return [file for file in files if self.is_tempfile(file)]
+        return [file for file in files if self._is_tempfile(file)]
 
     def add_attachment(self, candidates):
+        __attachments = self.attachments()
         for candidate in candidates:
-            pass
+            if candidate.lastname_firstname in __attachments:
+                candidate.lastname_firstname = __attachments[]
+                pass
+
