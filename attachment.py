@@ -51,7 +51,6 @@ class Attachment:
         else:
             return filename, None
 
-
     def _is_tempfile(self, filename: str):
         return filename.startswith(prefix=('.', '~', 'lock'))
 

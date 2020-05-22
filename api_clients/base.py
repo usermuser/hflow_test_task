@@ -1,4 +1,3 @@
-import json
 import logging
 
 import requests
@@ -76,7 +75,3 @@ class BaseClient:
             except Exception:
                 self.logger.exception('Неизвестная ошибка...')
                 return
-
-
-
-

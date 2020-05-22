@@ -28,8 +28,7 @@ class ExcelReader():
         return result
 
 
-
-# if __name__ == '__main__':
-#     e = ExcelReader(excel_path)
-# for c in e.candidates_from_excel():
-#     print(c)
+if __name__ == '__main__':
+    reader = ExcelReader(excel_path)
+for candidate in reader.candidates_from_excel():
+    print(candidate)
