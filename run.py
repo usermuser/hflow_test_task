@@ -5,7 +5,8 @@ from candidates import Candidate
 from attachment import Attachment
 
 
-def create_candidates(candidates: Dict):
+def create_candidates(candidates: Dict) -> List[Candidate]:
+    """Converts candidates records from dict to objects"""
     result = []
     for i in range(len(candidates['fios'])):
         result.append(
@@ -17,16 +18,12 @@ def create_candidates(candidates: Dict):
                 status=candidates['statuses'][i],
             )
         )
-    print(f'[INFO] result is: {result}')
     return result
 
 
 if __name__ == '__main__':
     reader = ExcelReader()
-    candidates_from_excel = reader.get_candidates_from_excel()
-    candidates = create_candidates(candidates_from_excel)
+    raw_candidates = reader.get_candidates_from_excel()
+    candidates = create_candidates(raw_candidates)
     attachments = Attachment()
     attachments.add_attachment(candidates)
-
-    for c in candidates:
-        print(c.fp)

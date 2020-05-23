@@ -4,6 +4,8 @@ from typing import List, Iterable, Tuple, Union, Dict
 
 from candidates import Candidate
 
+UNDESIRABLE_SYMBOLS = (("й", "й"),)
+
 
 class Attachment:
     """Aggregates methods to create attachments"""
@@ -28,34 +30,43 @@ class Attachment:
             if files:
                 files = self._remove_tempfiles(files)
                 for file in files:
-                    key = Path(file).stem  # prepare key 'Lastname Firstname' for dict
+                    lastname_firstname, middlename = self._prepare_filename(file)
+                    key = lastname_firstname
                     fp = str(Path(file).resolve())  # prepare filepath
                     position = PurePath(address).parts[-1]  # prepare position of candidate
-                    result[key] = [fp, position]
+                    result[key] = [fp, position, middlename]
         return result
 
-    def _prepare_filename(self, filename: str) -> Tuple[str, Union[str, None]]:
+    def _prepare_filename(self, filename_as_list: str) -> Tuple[str, Union[str, None]]:
         """Create 'Lastname Firstname' identifier
 
-        For simplicity we assume that filename will consists of only three or two words
+        For simplicity we assume that filename_as_list will consists of only three or two words
         """
 
-        filename = Path(filename).stem  # remove suffix like .pdf
-        filename = filename.split(' ')
+        raw_filename = Path(filename_as_list).stem  # remove suffix like .pdf
+        filename = self._replace_undesirable_symbol(raw_filename)
+        filename_as_list = filename.split(' ')
 
-        if len(filename) == 3:
-            lastname_firstname = ' '.join(filename[0:2])
-            middlename = filename[2]
+        if len(filename_as_list) == 3:
+            lastname_firstname = ' '.join(filename_as_list[0:2])
+            middlename = filename_as_list[2]
             return lastname_firstname, middlename
-        elif len(filename) == 2:
-            lastname_firstname = ' '.join(filename[0:2])
+        elif len(filename_as_list) == 2:
+            lastname_firstname = ' '.join(filename_as_list[0:2])
             middlename = None
             return lastname_firstname, middlename
         else:
-            return filename, None
+            return filename_as_list, None
 
-    def _is_tempfile(self, filename: str) -> bool:
-        # return filename.startswith(('.', '.~', '.~lock'))
+    @staticmethod
+    def _replace_undesirable_symbol(text: str) -> str:
+        result_text = str
+        for bad_symbol, good_symbol in UNDESIRABLE_SYMBOLS:
+            result_text = text.replace(bad_symbol, good_symbol)
+        return result_text
+
+    @staticmethod
+    def _is_tempfile(filename: str) -> bool:
         return filename.startswith(('.', '.~', '.~lock'))
 
     def _remove_tempfiles(self, files) -> List[str]:
@@ -78,10 +89,11 @@ class Attachment:
             Должность:                 folder name:
             Менеджер по продажам       Менеджер по продажам
 
+        _attachments is a dict with 'Lastname Firstname' as key and [fp, position, middlename] as value
+            [0] -> fp, [1] -> position, [2] -> middlename (Can be None)
         """
         _attachments = self._get_attachments()
         for candidate in candidates:
             if candidate.lastname_firstname in _attachments:
                 candidate.fp = _attachments[candidate.lastname_firstname][0]
-                # todo simplify attachments storage structure
         return

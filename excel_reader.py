@@ -48,7 +48,8 @@ class ExcelReader:
 
         return candidates
 
-    def _normilize_salary(self, salary):
+    @staticmethod
+    def _normilize_salary(salary):
         # todo change function to work with copy and change it to staticmethod
         """Remove redundant letters like 'рублей' """
         patterns = ['рублей', 'руб', 'р', ' ']
