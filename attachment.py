@@ -27,10 +27,9 @@ class Attachment:
         for address, dirs, files in os.walk(self.folder):
             if files:
                 files = self._remove_tempfiles(files)
-                print(files)
                 for file in files:
-                    key = Path(file.stem)  # prepare key 'Lastname Firstname' for dict
-                    fp = Path(file).resolve()  # prepare filepath
+                    key = Path(file).stem  # prepare key 'Lastname Firstname' for dict
+                    fp = str(Path(file).resolve())  # prepare filepath
                     position = PurePath(address).parts[-1]  # prepare position of candidate
                     result[key] = [fp, position]
         return result
@@ -56,11 +55,12 @@ class Attachment:
             return filename, None
 
     def _is_tempfile(self, filename: str) -> bool:
+        # return filename.startswith(('.', '.~', '.~lock'))
         return filename.startswith(('.', '.~', '.~lock'))
 
     def _remove_tempfiles(self, files) -> List[str]:
         """Create new list without tempfiles"""
-        return [file for file in files if self._is_tempfile(file)]
+        return [file for file in files if not self._is_tempfile(file)]
 
     def add_attachment(self, candidates: Iterable[Candidate]) -> None:
         """Add path to cv for every candidate
@@ -79,9 +79,9 @@ class Attachment:
             Менеджер по продажам       Менеджер по продажам
 
         """
-        __attachments = self._get_attachments()
+        _attachments = self._get_attachments()
         for candidate in candidates:
-            if candidate.lastname_firstname in __attachments:
-                candidate.fp = __attachments[candidate.lastname_firstname[0]]
+            if candidate.lastname_firstname in _attachments:
+                candidate.fp = _attachments[candidate.lastname_firstname][0]
                 # todo simplify attachments storage structure
         return

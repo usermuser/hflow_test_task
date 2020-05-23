@@ -15,7 +15,7 @@ class ExcelReader:
     def __init__(self, excel_path=excel_path):
         self.excel_path = excel_path
 
-    def _read_excel(self):
+    def _read_excel(self) -> List:
         """Read excel file except headers
 
         for simplicity we assume that we have only one sheet always
@@ -30,7 +30,7 @@ class ExcelReader:
             _data.append(column_data)
         return _data
 
-    def candidates_from_excel(self):  # todo check each candidate in candidate_from_excel
+    def get_candidates_from_excel(self) -> Dict:  # todo check each candidate in candidate_from_excel
         """Save excel data """
         excel_data: List
         excel_data = self._read_excel()
@@ -44,7 +44,6 @@ class ExcelReader:
         # remove redundant whitespaces from 'ФИО' column
         # '  Иванов Иван   ' -> 'Иванов Иван'
         candidates['fios'] = list(map(str.strip, candidates['fios']))
-
         candidates['salary_requests'] = list(map(self._normilize_salary, candidates['salary_requests']))
 
         return candidates
@@ -57,11 +56,3 @@ class ExcelReader:
             if pattern in str(salary):
                 salary = salary.replace(pattern, '')
         return float(salary)
-
-
-if __name__ == '__main__':
-    reader = ExcelReader(excel_path)
-    for candidate in reader.candidates_from_excel():
-        print(candidate)
-    print('\n\n')
-    print(reader._candidates_from_excel())
