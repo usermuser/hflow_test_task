@@ -27,3 +27,4 @@ if __name__ == '__main__':
     candidates = create_candidates(raw_candidates)
     attachments = Attachment()
     attachments.add_attachment(candidates)
+    
