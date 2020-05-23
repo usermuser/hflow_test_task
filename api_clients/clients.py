@@ -108,6 +108,7 @@ class BaseClient:
                 self.logger.exception('Неизвестная ошибка...')
                 return
 
+
 class HuntFlowClient(BaseClient):
 
     def get_vacancies(self):
@@ -176,19 +177,6 @@ class HuntFlowClient(BaseClient):
         """
         pass
 
+
 if __name__ == '__main__':
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    pass
