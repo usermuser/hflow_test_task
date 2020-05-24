@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import time
+import time
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -97,7 +97,7 @@ class BaseClient:
              payload=None):
         """Request and response in json format only"""
         tries = RETRY_COUNT
-        while tries > 1:
+        while tries > 0:
             try:
                 response = requests.post(url, headers=headers, files=files, json=payload)
 
@@ -105,9 +105,9 @@ class BaseClient:
                     print(f'[INFO] response status is: {response.status_code, response.json}')
                     return response.json()
                 elif response.status_code in self.retry_codes:
-                    print(f'[INFO] got {response.status_code} going to retry. {response.}')
+                    print(f'--[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
                     time.sleep(self.repeat_timeout)
-                    continue
+
 
             except self.REQUESTS_EXCEPTIONS:
                 self.logger.exception('Запрос по адресу %s не удался.' % url)
@@ -196,21 +196,20 @@ class HuntFlowClient(BaseClient):
         """
         pass
 
-    def add_file_to_hflow(self, candidate: Candidate):
+    def add_file_to_hflow(self, candidate: Candidate) -> int:
         """Performs POST request to particular endpoint to add file
 
         endpoint: /account/{account_id}/upload
 
         if we want to recognize fields, we can set
         X-File-Parse: true
+
         """
         file = {candidate.lastname_firstname: open(candidate.fp, 'rb')}
         payload = {'X-File-Parse': False}
         response = self.post(url=self.add_file_endpoint, headers=self.auth_header, files=file, payload=payload)
-        print(f'[INFO] Response is: {response}')
-        file_id = response["id"]
-        return file_url, file_id
-
-
-if __name__ == '__main__':
-    pass
+        try:
+            file_id = response["id"]
+        except TypeError:
+            file_id = None
+        return file_id

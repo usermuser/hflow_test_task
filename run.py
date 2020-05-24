@@ -29,5 +29,8 @@ if __name__ == '__main__':
     attachments = Attachment()
     attachments.add_attachment(candidates)
 
-    teest = HuntFlowClient()
-    send_file = teest.add_file_to_hflow(candidates[0])
+    client = HuntFlowClient()
+    for candidate in candidates:
+        file_id = client.add_file_to_hflow(candidate)
+        if file_id:
+            candidate.files_id = file_id
