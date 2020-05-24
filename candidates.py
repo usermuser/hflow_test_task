@@ -17,6 +17,8 @@ class BaseCandidate:
         self.middlename = ''
         self.lastname = ''
         self.__parse_fio()
+        self.files_id = []
+        self.id = int
 
     def __parse_fio(self):
         """Create separated attributes firstname, last name (also middlename if provided"""
