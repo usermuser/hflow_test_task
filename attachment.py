@@ -32,7 +32,7 @@ class Attachment:
                 for file in files:
                     lastname_firstname, middlename = self._prepare_filename(file)
                     key = lastname_firstname
-                    fp = str(Path(file).resolve())  # prepare filepath
+                    fp = str(Path().resolve().joinpath(address, file))
                     position = PurePath(address).parts[-1]  # prepare position of candidate
                     result[key] = [fp, position, middlename]
         return result

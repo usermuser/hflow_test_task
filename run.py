@@ -3,6 +3,7 @@ from typing import List, Dict
 from excel_reader import ExcelReader
 from candidates import Candidate
 from attachment import Attachment
+from api_clients.clients import HuntFlowClient
 
 
 def create_candidates(candidates: Dict) -> List[Candidate]:
@@ -27,4 +28,6 @@ if __name__ == '__main__':
     candidates = create_candidates(raw_candidates)
     attachments = Attachment()
     attachments.add_attachment(candidates)
-    
+
+    teest = HuntFlowClient()
+    send_file = teest.add_file_to_hflow(candidates[0])

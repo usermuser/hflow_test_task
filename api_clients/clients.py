@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import time
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -15,8 +16,10 @@ from settings import (
     API_ENDPOINT,
     LOGIN,
     PASSWORD,
-    ACCOUNT_ID
+    ACCOUNT_ID,
+
 )
+from candidates import Candidate
 
 
 class BaseClient:
@@ -76,7 +79,6 @@ class BaseClient:
             if response.status_code == 200:
                 if json_output:
                     return response.json()
-
                 return response
 
         except self.REQUESTS_EXCEPTIONS:
@@ -88,28 +90,45 @@ class BaseClient:
         except Exception:
             self.logger.exception('Внутренняя ошибка!')
 
-    def post(self, endpoint=None, json_input=True, json_output=True, payload=None):
-        _url = self.base_url + endpoint
-
-        with requests.Session() as session:
-            session.mount(_url, HTTPAdapter(max_retries=self._retry_strategy()))
-
+    def post(self,
+             url=None,
+             headers=None,
+             files=None,
+             payload=None):
+        """Request and response in json format only"""
+        tries = RETRY_COUNT
+        while tries > 1:
             try:
-                if json_input:
-                    response = requests.post(_url, json=payload)
-                else:
-                    response = requests.post(_url, data=payload)
-                response.raise_for_status()
-                return response.json()
+                response = requests.post(url, headers=headers, files=files, json=payload)
+
+                if response.status_code == 200:
+                    print(f'[INFO] response status is: {response.status_code, response.json}')
+                    return response.json()
+                elif response.status_code in self.retry_codes:
+                    print(f'[INFO] got {response.status_code} going to retry. {response.}')
+                    time.sleep(self.repeat_timeout)
+                    continue
+
             except self.REQUESTS_EXCEPTIONS:
-                self.logger.exception('Запрос по адресу %s не удался' % _url)
-                return
+                self.logger.exception('Запрос по адресу %s не удался.' % url)
+
+            except json.decoder.JSONDecodeError:
+                self.logger.exception('В ответe не JSON: %s' % response)
+
             except Exception:
-                self.logger.exception('Неизвестная ошибка...')
-                return
+                self.logger.exception('Внутренняя ошибка!')
+
+            time.sleep(self.retry_timeout)
+            tries -= 1
+        self.logger.error('Запрос не удался')
+        return
 
 
 class HuntFlowClient(BaseClient):
+    def __init__(self):
+        super().__init__()
+        self.auth_header = {"Authorization": f"Bearer {TOKEN}"}
+        self.add_file_endpoint = f'{API_ENDPOINT}account/{ACCOUNT_ID}/upload'
 
     def get_vacancies(self):
         """GET /account/{account_id}/vacancies
@@ -176,6 +195,21 @@ class HuntFlowClient(BaseClient):
             }
         """
         pass
+
+    def add_file_to_hflow(self, candidate: Candidate):
+        """Performs POST request to particular endpoint to add file
+
+        endpoint: /account/{account_id}/upload
+
+        if we want to recognize fields, we can set
+        X-File-Parse: true
+        """
+        file = {candidate.lastname_firstname: open(candidate.fp, 'rb')}
+        payload = {'X-File-Parse': False}
+        response = self.post(url=self.add_file_endpoint, headers=self.auth_header, files=file, payload=payload)
+        print(f'[INFO] Response is: {response}')
+        file_id = response["id"]
+        return file_url, file_id
 
 
 if __name__ == '__main__':
