@@ -108,7 +108,6 @@ class BaseClient:
                     print(f'--[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
                     time.sleep(self.repeat_timeout)
 
-
             except self.REQUESTS_EXCEPTIONS:
                 self.logger.exception('Запрос по адресу %s не удался.' % url)
 
@@ -125,63 +124,42 @@ class BaseClient:
 
 
 class HuntFlowClient(BaseClient):
+    """Store methods to interact with HuntFlow api"""
+
     def __init__(self):
         super().__init__()
-        self.auth_header = {"Authorization": f"Bearer {TOKEN}"}
-        self.add_file_endpoint = f'{API_ENDPOINT}account/{ACCOUNT_ID}/upload'
+        self._auth_header = {"Authorization": f"Bearer {TOKEN}"}
+        self._add_file_url = f'{API_ENDPOINT}account/{ACCOUNT_ID}/upload'
+        self._add_candidate_to_db_url = f'{API_ENDPOINT}account/{ACCOUNT_ID}/applicants'
 
     def get_vacancies(self):
         """GET /account/{account_id}/vacancies
-        вернёт список вакансий компании
 
-        mine -
-        opened -
-        count, page -
+        вернёт список вакансий компании
         """
-        account_id = LOGIN
-        url = f'/account/{account_id}/'
         pass
 
-    def add_candidate_to_db(self):
+    def add_candidate_to_db(self, candidate: Candidate):
         """POST /account/{account_id}/applicants
 
-        В теле запроса необходимо передать JSON вида:
-            {
-                "last_name": "Глибин",
-                "first_name": "Виталий",
-                "middle_name": "Николаевич",
-                "phone": "89260731778",
-                "email": "glibin.v@gmail.com",
-                "position": "Фронтендер",
-                "company": "ХХ",
-                "money": "100000 руб",
-                "birthday_day": 20,
-                "birthday_month": 7,
-                "birthday_year": 1984,
-                "photo": 12341,
-                "externals": [
-                    {
-                        "data": {
-                            "body": "Текст резюме\nТакой текст"
-                        },
-                        "auth_type": "NATIVE",
-                        "files": [
-                            {
-                                "id": 12430
-                            }
-                        ],
-                        "account_source": 208
-                    }
-                ]
-            }
+        last_name and first_name are required fields
         """
-        pass
+        payload = {
+            "last_name": candidate.lastname,
+            "first_name": candidate.firstname,
+            "middle_name": candidate.middlename,
+            "position": candidate.position,
+            "money": candidate.salary,
+        }
+        response = self.post(self._add_candidate_to_db_url, headers=self._auth_header, payload=payload)
+        if response:
+            response = json.loads(response)
+            return response['id']
 
     def add_candidate_to_vacancy(self):
         """POST /account/{account_id}/applicants/{applicant_id}/vacancy
 
         В теле запроса необходимо передать JSON вида:
-
             {
                 "vacancy": 988,
                 "status": 1230,
@@ -200,14 +178,11 @@ class HuntFlowClient(BaseClient):
         """Performs POST request to particular endpoint to add file
 
         endpoint: /account/{account_id}/upload
-
-        if we want to recognize fields, we can set
-        X-File-Parse: true
-
+        if we want to recognize fields, we can set X-File-Parse: true
         """
         file = {candidate.lastname_firstname: open(candidate.fp, 'rb')}
         payload = {'X-File-Parse': False}
-        response = self.post(url=self.add_file_endpoint, headers=self.auth_header, files=file, payload=payload)
+        response = self.post(url=self._add_file_url, headers=self._auth_header, files=file, payload=payload)
         try:
             file_id = response["id"]
         except TypeError:

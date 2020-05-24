@@ -30,7 +30,7 @@ class ExcelReader:
             _data.append(column_data)
         return _data
 
-    def get_candidates_from_excel(self) -> Dict:  # todo check each candidate in candidate_from_excel
+    def read_candidates_from_excel(self) -> Dict:  # todo check each candidate in candidate_from_excel
         """Save excel data """
         excel_data: List
         excel_data = self._read_excel()
