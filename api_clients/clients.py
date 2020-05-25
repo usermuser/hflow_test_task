@@ -250,7 +250,7 @@ class HuntFlowClient(BaseClient):
             response = json.loads(response)
             return response['id']
 
-    def add_candidate_to_vacancy(self, candidate: Candidate):
+    def add_candidate_to_vacancy(self, candidate: Candidate) -> None:
         """POST /account/{account_id}/applicants/{applicant_id}/vacancy
 
         В теле запроса необходимо передать JSON вида:
@@ -270,17 +270,15 @@ class HuntFlowClient(BaseClient):
             if candidate.is_suitable_for(vacancy):
                 payload = {
                     "vacancy": vacancy.id,
-                    "status": candidate.status,
+                    "status": candidate.status_id,
                     "comment": candidate.comment,
-                    "files":[
-                        {
-                            "id": int
-                        }
-                    ]
-                    "rejection_reason":
+                    "files": None,  # todo work on it
+                    "rejection_reason": candidate.comment if candidate.status_id == 50 else None
                 }
                 url = self._add_candidate_to_vacancy_url
                 response = self.post(url=url, headers=self._auth_header, payload=payload)
+                # todo handle response data
+                return
 
     def add_resume_to_hflow(self, candidate: Candidate) -> int:
         """Performs POST request to particular endpoint to add file
@@ -296,7 +294,3 @@ class HuntFlowClient(BaseClient):
         except TypeError:
             file_id = None
         return file_id
-
-
-if __name__ == '__main__':
-    client = HuntFlowClient()

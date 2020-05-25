@@ -16,18 +16,17 @@ def create_candidates(candidates: Dict) -> List[Candidate]:
                 fio=candidates['fios'][i],
                 salary=candidates['salary_requests'][i],
                 comment=candidates['comments'][i],
-                status=candidates['statuses'][i],
+                status_text=candidates['statuses'][i],
             )
         )
     return result
 
 
-def upload_resumes(candidates: List[Candidate]) -> None:
+def upload_resumes(candidates: List[Candidate], client: HuntFlowClient) -> None:
     """Send resumes using HuntFlow api
 
     if uploading is successful we store file_id in Candidate.file_id attribute
     """
-    client = HuntFlowClient()
     for candidate in candidates:
         file_id = client.add_resume_to_hflow(candidate)
         if file_id:
@@ -35,13 +34,18 @@ def upload_resumes(candidates: List[Candidate]) -> None:
     return
 
 
-def add_candidates_to_db(candidates: List[Candidate]) -> None:
+def add_candidates_to_db(candidates: List[Candidate], client: HuntFlowClient) -> None:
     """Add candidate to database via api and get id"""
-    client = HuntFlowClient()
     for candidate in candidates:
         candidate_id = client.add_candidate_to_db(candidate)
         if candidate_id:
             candidate.id = candidate_id
+    return
+
+
+def add_candidates_to_vacancy(candidates: List[Candidate], client: HuntFlowClient) -> None:
+    for candidate in candidates:
+        client.add_candidate_to_vacancy(candidate)
     return
 
 
@@ -52,9 +56,10 @@ def run() -> None:
     attachments = Attachment()
     attachments.add_attachment(candidates)
 
-    upload_resumes(candidates)
-    add_candidates_to_db(candidates)
-    # HuntFlowClient.add_candidate_to_vacancy(candidates)
+    client = HuntFlowClient()
+    upload_resumes(candidates, client)
+    add_candidates_to_db(candidates, client)
+    add_candidates_to_vacancy(candidates, client)
     return
 
 

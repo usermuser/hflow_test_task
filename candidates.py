@@ -20,6 +20,7 @@ class BaseCandidate:
         self._parse_fio()
         self.files_id = []
         self.id = int
+        self.rejection_reason = ''
 
     def _parse_fio(self):
         """Create separated attributes firstname, last name (also middlename if provided"""
