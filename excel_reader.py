@@ -3,12 +3,10 @@
 """
 import os
 from typing import List, Dict
-
-from settings import BASE_DIR
+from settings import EXCEL_FOLDER
 import xlrd
 
 _path = os.getcwd()
-excel_path = os.path.join(BASE_DIR, 'excel', 'Тестовая база.xlsx')
 
 
 class ExcelReader:

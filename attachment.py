@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 from typing import List, Iterable, Tuple, Union, Dict
 
 from candidates import Candidate
-from utils.utils import EXCEL_FOLDER
+from utils import EXCEL_FOLDER
 
 UNDESIRABLE_SYMBOLS = (("й", "й"),)
 
