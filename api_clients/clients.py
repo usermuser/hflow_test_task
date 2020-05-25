@@ -1,9 +1,9 @@
 import json
 import logging
 import time
+from typing import Dict, Iterable, List, Union
 
 import requests
-from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from settings import (
@@ -14,12 +14,11 @@ from settings import (
     RETRY_CODES,
     TOKEN,
     API_ENDPOINT,
-    LOGIN,
-    PASSWORD,
     ACCOUNT_ID,
 
 )
 from candidates import Candidate
+from vacancies import Vacancy
 
 
 class BaseClient:
@@ -114,7 +113,7 @@ class BaseClient:
                     print(f'[INFO] response status is: {response.status_code, response.json}')
                     return response.json()
                 elif response.status_code in self.retry_codes:
-                    print(f'--[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
+                    print(f'[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
                     time.sleep(self.repeat_timeout)
                 else:
                     return
@@ -141,10 +140,14 @@ class HuntFlowClient(BaseClient):
         super().__init__()
         self._auth_header = {"Authorization": f"Bearer {TOKEN}"}
         self.account_id = self._get_account_id
-        self.appliacant_id = ''  # todo add applicant_id
+        self.appliacant_id = self.add_candidate_to_db
         self._add_file_url = f'{API_ENDPOINT}account/{self.account_id}/upload'
         self._add_candidate_to_db_url = f'{API_ENDPOINT}account/{self.account_id}/applicants'
-        self._add_candidate_to_vacancy_url = f'{API_ENDPOINT}account/{self.account_id}/applicants/{self.applicant_id}'
+        self._add_candidate_to_vacancy_url = f'{API_ENDPOINT}account/' \
+                                             f'{self.account_id}/applicants/{self.appliacant_id}/vacancy'
+        self._vacancies_url = f'{API_ENDPOINT}account/{self.account_id}/vacancies'
+        self.status_url = f'{API_ENDPOINT}account/{self.account_id}/vacancy/statuses'
+        self.vacancies = None
 
     @property
     def _get_account_id(self) -> int:
@@ -158,12 +161,77 @@ class HuntFlowClient(BaseClient):
         id = response['items'][0]['id']
         return id if id else ACCOUNT_ID
 
-    def get_vacancies(self):
-        """GET /account/{account_id}/vacancies
+    @property
+    def available_statuses(self):
+        """Available statuses for current Company
 
-        вернёт список вакансий компании
+        status example:
+        {
+            "id": 42,
+            "type": "user",
+            "order": 2,
+            "name": "Submitted",
+            "removed": null
+        }
+        41 - New Lead, order: 1
+        42 - Submitted, order: 2 - отправлено письмо
+        43 - Contacted, order: 3
+        44 - HR interview, order: 4 - интервью с HR
+        45 - Client interview
+        46 - Offered
+        47 - Offer Accepted
+        48 - Hired
+        49 - Trial passed, order: 9
+        50 - Declined, order: 9999 - отказ
         """
+        raw_statuses = self.get(self.status_url)
+        statuses_as_list = raw_statuses["items"]
         pass
+
+    def get_vacancies(self) -> None:
+        """Get and save available vacancies from service via api
+
+        method
+        GET /account/{account_id}/vacancies
+        """
+        headers = self._auth_header
+        response = self.get(self._vacancies_url, headers=headers)
+        try:
+            list_raw_vacancies = response['items']
+            self.vacancies = self.create_vacancies(list_raw_vacancies)
+        except Exception:
+            self.logger.exception('Exception occured during creating vacancies')
+        return
+        # todo add empty/bad response verification and proper exceptions handling
+
+    def create_vacancies(self, raw_vacancies: List[Dict]) -> List[Vacancy]:
+        """Create list of Vacancy() objects"""
+        result = []
+        for raw_vacancy in raw_vacancies:
+            result.append(self.convert_to_vacancy(raw_vacancy))
+        return result
+
+    @staticmethod
+    def convert_to_vacancy(data: Dict) -> Vacancy:
+        """Convert dict object to Vacancy object"""
+        vacancy = Vacancy(
+            id=data['id'],
+            position=data['position'],
+            company=data['company'],
+            money=data['money'],
+            state=data['state'],
+            created=data['created'],
+            hidden=data['hidden'],
+            priority=data['priority'],
+            deadline=data['deadline'],
+            account_division=data['account_division'],
+            applicants_to_hire=data['applicants_to_hire'],
+            account_vacancy_status_group=data['account_vacancy_status_group'],
+            parent=data['parent'],
+            multiple=data['multiple'],
+            vacancy_request=data['vacancy_request']
+        )
+        return vacancy
 
     def add_candidate_to_db(self, candidate: Candidate):
         """POST /account/{account_id}/applicants
@@ -182,25 +250,39 @@ class HuntFlowClient(BaseClient):
             response = json.loads(response)
             return response['id']
 
-    def add_candidate_to_vacancy(self):
-        """POST /account/{account_id}/applicants/{account_id}/vacancy
+    def add_candidate_to_vacancy(self, candidate: Candidate):
+        """POST /account/{account_id}/applicants/{applicant_id}/vacancy
 
         В теле запроса необходимо передать JSON вида:
             {
-                "vacancy": 988,
-                "status": 1230,
+                "vacancy": 988,         << required
+                "status": 1230,         << required
                 "comment": "Привет",
                 "files": [
                     {
-                        "id": 1382810
+                        "id": 1382810   << required
                     }
                 ],
                 "rejection_reason": null
             }
         """
-        pass
+        for vacancy in self.vacancies:
+            if candidate.is_suitable_for(vacancy):
+                payload = {
+                    "vacancy": vacancy.id,
+                    "status": candidate.status,
+                    "comment": candidate.comment,
+                    "files":[
+                        {
+                            "id": int
+                        }
+                    ]
+                    "rejection_reason":
+                }
+                url = self._add_candidate_to_vacancy_url
+                response = self.post(url=url, headers=self._auth_header, payload=payload)
 
-    def add_file_to_hflow(self, candidate: Candidate) -> int:
+    def add_resume_to_hflow(self, candidate: Candidate) -> int:
         """Performs POST request to particular endpoint to add file
 
         endpoint: /account/{account_id}/upload
@@ -218,4 +300,3 @@ class HuntFlowClient(BaseClient):
 
 if __name__ == '__main__':
     client = HuntFlowClient()
-    id = client.account_id

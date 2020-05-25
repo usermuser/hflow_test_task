@@ -29,7 +29,7 @@ def upload_resumes(candidates: List[Candidate]) -> None:
     """
     client = HuntFlowClient()
     for candidate in candidates:
-        file_id = client.add_file_to_hflow(candidate)
+        file_id = client.add_resume_to_hflow(candidate)
         if file_id:
             candidate.files_id = file_id
     return
