@@ -97,10 +97,8 @@ class BaseClient:
                 response = requests.post(url, headers=headers, files=files, json=payload)
 
                 if response.status_code == 200:
-                    print(f'[INFO] response status is: {response.status_code, response.json}')
                     return response.json()
                 elif response.status_code in self.retry_codes:
-                    print(f'[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
                     time.sleep(self.repeat_timeout)
                 else:
                     return
