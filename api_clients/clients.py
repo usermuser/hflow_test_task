@@ -1,10 +1,9 @@
 import json
 import logging
 import time
-from typing import Dict, Iterable, List, Union
+from typing import Dict, List
 
 import requests
-from urllib3.util.retry import Retry
 
 from settings import (
     RETRY_COUNT,
@@ -13,6 +12,7 @@ from settings import (
     REPEAT_TIMEOUT,
     RETRY_CODES,
     API_ENDPOINT,
+    TOKEN,
     ACCOUNT_ID,
 
 )
@@ -31,7 +31,7 @@ class BaseClient:
     def __init__(
             self,
             base_url=API_ENDPOINT,
-            token=token,
+            token=TOKEN,
             retry_count=RETRY_COUNT,
             retry_timeout=RETRY_TIMEOUT,
             retry=RETRY,
@@ -45,18 +45,6 @@ class BaseClient:
         self.retry = retry
         self.repeat_timeout = repeat_timeout
         self.retry_codes = retry_codes
-
-    def _retry_strategy(self):
-        retry_methods = ("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE")
-        return Retry(
-            total=self.retry_count,
-            backoff_factor=self.repeat_timeout,
-            status=self.retry_count,
-            status_forcelist=self.retry_codes,
-            connect=self.retry_count,
-            read=self.retry_count,
-            method_whitelist=retry_methods,
-        )
 
     @property
     def _set_retries(self) -> int:

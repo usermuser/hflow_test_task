@@ -3,14 +3,13 @@
 """
 import os
 from typing import List, Dict
-from settings import EXCEL_FOLDER
 import xlrd
 
-_path = os.getcwd()
+from settings import EXCEL_FILE
 
 
 class ExcelReader:
-    def __init__(self, excel_path=excel_path):
+    def __init__(self, excel_path=EXCEL_FILE):
         self.excel_path = excel_path
 
     def _read_excel(self) -> List:
