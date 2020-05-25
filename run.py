@@ -1,4 +1,5 @@
 from typing import List, Dict
+import logging
 
 from excel_reader import ExcelReader
 from candidates import Candidate
@@ -50,6 +51,7 @@ def add_candidates_to_vacancy(candidates: List[Candidate], client: HuntFlowClien
 
 
 def run() -> None:
+    logging.basicConfig(level=logging.DEBUG)
     reader = ExcelReader()
     raw_candidates = reader.read_candidates_from_excel()
     candidates = create_candidates(raw_candidates)

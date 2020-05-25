@@ -62,10 +62,12 @@ class BaseClient:
 
         while tries > 0:
             try:
+                self.logger.info('Делаем запрос по адресу %s.' % url)
                 response = requests.get(url, headers=headers, json=payload)
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code in self.retry_codes:
+                    self.logger.info('Будем делать повторный запрос так как получили %d.' % response.status_code, url)
                     time.sleep(self.repeat_timeout)
                 else:
                     return
@@ -80,6 +82,7 @@ class BaseClient:
                 self.logger.exception('Внутренняя ошибка!')
 
             time.sleep(self.retry_timeout)
+            self.logger.info('Будем делать повторный запрос так как получили %d.' % response.status_code, url)
             tries -= 1
         self.logger.error('Запрос по адресу %s не удался' % url)
 
@@ -172,6 +175,8 @@ class HuntFlowClient(BaseClient):
         48 - Hired
         49 - Trial passed, order: 9
         50 - Declined, order: 9999 - отказ
+
+        # todo not implemented
         """
         raw_statuses = self.get(self.status_url)
         statuses_as_list = raw_statuses["items"]
@@ -236,6 +241,7 @@ class HuntFlowClient(BaseClient):
         }
         response = self.post(self._add_candidate_to_db_url, headers=self._auth_header, payload=payload)
         if response:
+            print(response)
             response = json.loads(response)
             return response['id']
 
