@@ -12,7 +12,6 @@ from settings import (
     RETRY,
     REPEAT_TIMEOUT,
     RETRY_CODES,
-    TOKEN,
     API_ENDPOINT,
     ACCOUNT_ID,
 
@@ -32,7 +31,7 @@ class BaseClient:
     def __init__(
             self,
             base_url=API_ENDPOINT,
-            token=TOKEN,
+            token=token,
             retry_count=RETRY_COUNT,
             retry_timeout=RETRY_TIMEOUT,
             retry=RETRY,

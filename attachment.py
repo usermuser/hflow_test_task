@@ -3,6 +3,7 @@ from pathlib import Path, PurePath
 from typing import List, Iterable, Tuple, Union, Dict
 
 from candidates import Candidate
+from utils.utils import EXCEL_FOLDER
 
 UNDESIRABLE_SYMBOLS = (("й", "й"),)
 
@@ -10,7 +11,7 @@ UNDESIRABLE_SYMBOLS = (("й", "й"),)
 class Attachment:
     """Aggregates methods to create attachments"""
 
-    def __init__(self, folder='cv'):
+    def __init__(self, folder=EXCEL_FOLDER):
         self.folder = folder
 
     def _get_attachments(self) -> Dict:

@@ -1,4 +1,5 @@
 from typing import List, Dict
+import argparse
 
 from excel_reader import ExcelReader
 from candidates import Candidate
@@ -50,6 +51,7 @@ def add_candidates_to_vacancy(candidates: List[Candidate], client: HuntFlowClien
 
 
 def run() -> None:
+    # токен и путь к папке с базой
     reader = ExcelReader()
     raw_candidates = reader.read_candidates_from_excel()
     candidates = create_candidates(raw_candidates)
@@ -64,4 +66,5 @@ def run() -> None:
 
 
 if __name__ == '__main__':
-    run()
+    # run()
+    check_command_line_args()

@@ -1,6 +1,5 @@
 import os
 from sensitive_settings import (
-    TOKEN,
     LOGIN,
     PASSWORD,
     ACCOUNT_ID
