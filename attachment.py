@@ -11,7 +11,7 @@ UNDESIRABLE_SYMBOLS = (("й", "й"),)
 class Attachment:
     """Aggregates methods to create attachments"""
 
-    def __init__(self, folder=EXCEL_FILE):
+    def __init__(self, folder='cv'):
         self.folder = folder
 
     def _get_attachments(self) -> Dict:
@@ -34,6 +34,7 @@ class Attachment:
                     lastname_firstname, middlename = self._prepare_filename(file)
                     key = lastname_firstname
                     fp = str(Path().resolve().joinpath(address, file))
+                    print(fp)
                     position = PurePath(address).parts[-1]  # prepare position of candidate
                     result[key] = [fp, position, middlename]
         return result
