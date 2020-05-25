@@ -143,8 +143,12 @@ class HuntFlowClient(BaseClient):
         headers = self._auth_header
         url = f'{API_ENDPOINT}accounts'
         response = self.get(url, headers=headers)
-        id = response['items'][0]['id']
-        return id if id else ACCOUNT_ID
+        try:
+            id = response['items'][0]['id']
+            return id
+        except TypeError:
+            self.logger.error('accoun_id получить не удалось, используем значение по умолчанию: %d' % ACCOUNT_ID)
+            return ACCOUNT_ID
 
     @property
     def available_statuses(self):
