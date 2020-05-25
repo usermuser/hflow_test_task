@@ -60,43 +60,52 @@ class BaseClient:
             method_whitelist=retry_methods,
         )
 
-    def get(self, url='', payload=None, session=None, json_output=True, **kwargs):
-        """GET request with retry strategy"""
-        url = self.base_url + url
+    @property
+    def _set_retries(self) -> int:
+        """Check settings for retry strategy"""
 
-        session = session or requests.Session()
-        adapter = HTTPAdapter(max_retries=self._retry_strategy)
-        session.mount(url, adapter=adapter)
+        if self.retry:
+            return 3 if self.retry_count <= 0 else self.retry_count
 
-        try:
-            self.logger.debug('Делаем GET запрос по адресу %s' % url)
-            response = requests.get(url, params=payload)
+        if not self.retry <= 0:
+            return 1
 
-            if not response:
-                self.logger.error('Запрос по адресу %s не удался, пустой ответ' % url)
-                return None
+    def get(self, url, headers=None, payload=None):
+        """GET request with retries"""
+        tries = self._set_retries
 
-            if response.status_code == 200:
-                if json_output:
+        while tries > 0:
+            try:
+                response = requests.get(url, headers=headers, json=payload)
+                if response.status_code == 200:
                     return response.json()
-                return response
+                elif response.status_code in self.retry_codes:
+                    time.sleep(self.repeat_timeout)
+                else:
+                    return
 
-        except self.REQUESTS_EXCEPTIONS:
-            self.logger.exception('Запрос по адресу %s не удался.' % url)
+            except self.REQUESTS_EXCEPTIONS:
+                self.logger.exception('Запрос по адресу %s не удался.' % url)
 
-        except json.decoder.JSONDecodeError:
-            self.logger.exception('В ответe не JSON: %s' % response)
+            except json.decoder.JSONDecodeError:
+                self.logger.exception('Запросе по адресу %s не удался: в ответe не JSON: %s' % url, response)
 
-        except Exception:
-            self.logger.exception('Внутренняя ошибка!')
+            except Exception:
+                self.logger.exception('Внутренняя ошибка!')
+
+            time.sleep(self.retry_timeout)
+            tries -= 1
+        self.logger.error('Запрос по адресу %s не удался' % url)
+
+        return
 
     def post(self,
-             url=None,
+             url,
              headers=None,
              files=None,
              payload=None):
         """Request and response in json format only"""
-        tries = RETRY_COUNT
+        tries = self._set_retries
         while tries > 0:
             try:
                 response = requests.post(url, headers=headers, files=files, json=payload)
@@ -107,6 +116,8 @@ class BaseClient:
                 elif response.status_code in self.retry_codes:
                     print(f'--[INFO] got {response.status_code} going to retry. {response}, tries: {tries}')
                     time.sleep(self.repeat_timeout)
+                else:
+                    return
 
             except self.REQUESTS_EXCEPTIONS:
                 self.logger.exception('Запрос по адресу %s не удался.' % url)
@@ -119,7 +130,7 @@ class BaseClient:
 
             time.sleep(self.retry_timeout)
             tries -= 1
-        self.logger.error('Запрос не удался')
+        self.logger.error('Запрос по адресу %s не удался' % url)
         return
 
 
@@ -129,8 +140,23 @@ class HuntFlowClient(BaseClient):
     def __init__(self):
         super().__init__()
         self._auth_header = {"Authorization": f"Bearer {TOKEN}"}
-        self._add_file_url = f'{API_ENDPOINT}account/{ACCOUNT_ID}/upload'
-        self._add_candidate_to_db_url = f'{API_ENDPOINT}account/{ACCOUNT_ID}/applicants'
+        self.account_id = self._get_account_id
+        self.appliacant_id = ''  # todo add applicant_id
+        self._add_file_url = f'{API_ENDPOINT}account/{self.account_id}/upload'
+        self._add_candidate_to_db_url = f'{API_ENDPOINT}account/{self.account_id}/applicants'
+        self._add_candidate_to_vacancy_url = f'{API_ENDPOINT}account/{self.account_id}/applicants/{self.applicant_id}'
+
+    @property
+    def _get_account_id(self) -> int:
+        """Make GET request with credentials and get id from response
+
+        endpoint: /me
+        """
+        headers = self._auth_header
+        url = f'{API_ENDPOINT}accounts'
+        response = self.get(url, headers=headers)
+        id = response['items'][0]['id']
+        return id if id else ACCOUNT_ID
 
     def get_vacancies(self):
         """GET /account/{account_id}/vacancies
@@ -157,7 +183,7 @@ class HuntFlowClient(BaseClient):
             return response['id']
 
     def add_candidate_to_vacancy(self):
-        """POST /account/{account_id}/applicants/{applicant_id}/vacancy
+        """POST /account/{account_id}/applicants/{account_id}/vacancy
 
         В теле запроса необходимо передать JSON вида:
             {
@@ -188,3 +214,8 @@ class HuntFlowClient(BaseClient):
         except TypeError:
             file_id = None
         return file_id
+
+
+if __name__ == '__main__':
+    client = HuntFlowClient()
+    id = client.account_id
