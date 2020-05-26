@@ -24,7 +24,9 @@ def add_candidates_to_vacancy():
   
 В задании есть пункт:  
  "Скрипт должен уметь принимать параметры командной строки (токен и путь к папке с базой)."    
- Для этих целей создадим функцию `parse_command_line`. Так как токен и путь к папке с базой это те данные, 
+ Для этих целей создадим функцию `parse_command_line`.
+     
+ Так как токен и путь к папке с базой это те данные, 
  которые лучше поместить в настройки, то функцию `parse_command_line` будем вызывать из файла настроек `settings.py`.
  В этой функции сделаем проверку корректности переданного пути. 
  Если путь не корректный, то будем использовать дефолтный путь из настроек.  
@@ -35,6 +37,22 @@ def add_candidates_to_vacancy():
     TOKEN, EXCEL_FOLDER = utils.parse_command_line()
     EXCEL_FILE = os.path.join(EXCEL_FOLDER, FILENAME)
 ```
+
+Будем использовать `argparse`.  
+Пример использования буду смотреть тут: https://pyneng.readthedocs.io/ru/latest/book/12_useful_modules/argparse.html
+
+Токен и путь к папке с базой в случае берем из файла настроек в том случае, 
+если в при запуске скрипта эти параметры не заданы. 
+Касательно пути к папке с базой, то, для валидации, буду использовать `pathlib`   
+
+
+Создание парсера:  
+ * `parser = argparse.ArgumentParser(description='Description')`
+
+Добавление аргументов:  
+* `parser.add_argument('-t', action="store", dest="token", help="token")`
+* `parser.add_argument('-p', action="store", dest="folder", help="path to database folder")`
+* `args = parser.parse_args()`
 
 2. Читаем excel файл, сохраняем данные в определенной структуре. Пусть это будет список классов.
 Будет базовый класс `BaseCandidate` на тот случай, если мы заходитим расширить функционал, 
