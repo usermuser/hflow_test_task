@@ -49,8 +49,6 @@ def add_candidates_to_vacancy():
 ```
 
 
-
-
 2. Читаем excel файл, сохраняем данные в определенной структуре. Пусть это будет список классов.
 Будет базовый класс `BaseCandidate` на тот случай, если мы заходитим расширить функционал, 
 и будет наследник `Candidate` 
@@ -103,8 +101,10 @@ def add_candidates_to_vacancy():
        if candidate.lastname_firstname in attachments:
            candidate.filepath = attachments['condidate.lastname_firstname']
 ```
-    `candidate_list` - список наших кандидатов, созданных на основе эксель файла   
-    `attachments` - список словарей, в котором хранятся пути до файлов, фамилии,
+
+`candidate_list` - список наших кандидатов, созданных на основе эксель файла
+   
+`attachments` - список словарей, в котором хранятся пути до файлов, фамилии,
                     в следующем формате:
                        
 ```
