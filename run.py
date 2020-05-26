@@ -24,7 +24,7 @@ def create_candidates(candidates: Dict) -> List[Candidate]:
 
 
 def upload_resumes(candidates: List[Candidate], client: HuntFlowClient) -> None:
-    """Send resumes using HuntFlow api
+    """Send resumes using via api
 
     if uploading is successful we store file_id in Candidate.file_id attribute
     """
